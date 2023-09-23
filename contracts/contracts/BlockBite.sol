@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.16;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./IWorldID.sol";
+import "./helper/ByteHasher.sol";
 
 contract DecentralizedDeliveryService is Ownable {
+    using ByteHasher for bytes;
     struct Order {
         address customer;
         address deliverer;
@@ -23,13 +26,19 @@ contract DecentralizedDeliveryService is Ownable {
     mapping(uint256 => uint256) public customerReputationLevels;
     mapping(address => bool) public delivererHasActiveOrder;
 
+    mapping(address => bool) public registeredWorldcoin;
+
     uint256 public constant SLASHING_PERCENTAGE = 5; // 5% of staked tokens will be slashed
 
     address public governanceToken;
 
     address public transactionCurrencyToken;
 
+    IWorldID internal immutable worldId;
+
     uint256 public orderCount = 0;
+
+    uint256 internal immutable externalNullifier;
 
     event OrderCreated(
         uint256 orderId,
@@ -51,10 +60,24 @@ contract DecentralizedDeliveryService is Ownable {
     );
     event CustomerReputationIncreased(address indexed customer, uint256 amount);
 
-    constructor(address _governanceToken, address _transactionCurrencyToken) {
+    constructor(
+        address _governanceToken,
+        address _transactionCurrencyToken,
+        IWorldID _worldIdAddr
+    ) {
         governanceToken = _governanceToken;
         transactionCurrencyToken = _transactionCurrencyToken;
         reputationLevels[1] = 100;
+        externalNullifier = abi
+            .encodePacked(
+                abi
+                    .encodePacked("app_4dbefa59fdf71b9b734938badbf9c23b")
+                    .hashToField(),
+                "register"
+            )
+            .hashToField();
+
+        worldId = _worldIdAddr;
     }
 
     function changeGovernanceTokenDEMOAdmin(
@@ -112,6 +135,28 @@ contract DecentralizedDeliveryService is Ownable {
 
     function verifyWorldCoin() external {
         // Logic to verify World Coin and raise reputation by a set amount
+    }
+
+    function registerWithWorldcoin(
+        address signal,
+        uint256 root,
+        uint256 nullifierHash,
+        uint256[8] calldata proof
+    ) external {
+        require(!registeredWorldcoin[msg.sender], "already registered");
+
+        worldId.verifyProof(
+            root,
+            1,
+            abi.encodePacked(signal).hashToField(),
+            nullifierHash,
+            externalNullifier,
+            proof
+        );
+
+        registeredWorldcoin[msg.sender] = true;
+        reputation[msg.sender] += 100;
+        emit DelivererReputationIncreased(msg.sender, 100);
     }
 
     function createOrder(

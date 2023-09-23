@@ -24,7 +24,7 @@ async function main() {
 
  // Deploy DecentralizedDeliveryService
  const DecentralizedDeliveryService = await hre.ethers.getContractFactory("DecentralizedDeliveryService");
- const deliveryService = await DecentralizedDeliveryService.deploy(await blockBiteToken.getAddress(), await testUSDC.getAddress());
+ const deliveryService = await DecentralizedDeliveryService.deploy(await blockBiteToken.getAddress(), await testUSDC.getAddress(), "0xD81dE4BCEf43840a2883e5730d014630eA6b7c4A"); //mumbai worldId contract addr
  await deliveryService.waitForDeployment();
  console.log("DecentralizedDeliveryService deployed to:",await  deliveryService.getAddress());
   

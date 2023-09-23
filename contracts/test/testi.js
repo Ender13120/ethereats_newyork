@@ -153,7 +153,7 @@ describe("TestUSDC", function () {
     });
 
 
-    it("Full flow accept and confirm delivery sucessful", async function () {
+    it("Full flow accept and confirm delivery successful", async function () {
       // 1. Ensure deliverer has enough reputation
       await blockBiteToken.connect(addr2).demoMint();
       await blockBiteToken.connect(addr2).approve(await deliveryService.getAddress(), ethers.parseEther("100"));

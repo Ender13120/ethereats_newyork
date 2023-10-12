@@ -1,5 +1,11 @@
 # ethereats_newyork
 
+[**Project Description NYC Ethglobal**](https://web.ethglobal.com/showcase/ethereats-v4iep)
+
+
+[**Project Repo**](https://github.com/blockbiteBB)
+
+
 
 Version 0.1 Contract Addresses on Mumbai Testnet:
 
